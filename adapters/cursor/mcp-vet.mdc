@@ -22,9 +22,10 @@ any tool is called** (line jumping). So vet statically, before trusting it. Prod
 0. **Provenance** — does the package name map to the real vendor? (`postmark-mcp` was NOT from Postmark.) Is it in the
    official MCP Registry under a verified reverse-DNS namespace? Repo⇄package mismatch, brand-new/low-signal, or a
    community wrapper of a brand API → flag.
-1. **Tool-definitions** — read every `tools/list` description. If this repo is in your workspace, run:
-   `bash scripts/run_scanners.sh --config <mcp-config.json>` (uses `mcp-scan` if installed). Else review by hand.
-2. **Source** — clone/inspect the repo, then: `bash scripts/run_scanners.sh --source <dir> [--npm <pkg>|--pypi <pkg>]`
+1. **Tool-definitions** — read every `tools/list` description, and run `mcp-vet-scan --config <mcp-config.json>`
+   (installed on your PATH by mcp-vet's `install.sh`; falls back to `bash scripts/run_scanners.sh …` if you cloned
+   the repo instead). Uses `mcp-scan` when present. If neither is available, review descriptions by hand.
+2. **Source** — clone/inspect the repo, then `mcp-vet-scan --source <dir> [--npm <pkg>|--pypi <pkg>]`
    (runs semgrep / trufflehog --only-verified / guarddog / osv-scanner if present).
 3. **Reason statically** against the taxonomy below — this is also the fallback when scanners are absent.
    An absent scanner is reported as absent, **never as a pass**. Never fabricate a finding.

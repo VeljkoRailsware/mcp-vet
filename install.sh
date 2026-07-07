@@ -15,6 +15,19 @@ cp -R "$REPO/SKILL.md" "$REPO/references" "$REPO/scripts" "$DEST/"
 chmod +x "$DEST/scripts/run_scanners.sh"
 say "Claude Code skill installed → $DEST"
 
+# --- Scanner CLI shim on PATH (always) --------------------------------------
+# Makes the scanner layer available to Cursor / VS Code / Codex as `mcp-vet-scan`,
+# so those adapters work even when this repo isn't in the workspace.
+BIN_DIR="${MCP_VET_BIN:-$HOME/.local/bin}"
+mkdir -p "$BIN_DIR"
+cp "$REPO/scripts/run_scanners.sh" "$BIN_DIR/mcp-vet-scan"
+chmod +x "$BIN_DIR/mcp-vet-scan"
+say "Scanner CLI installed → $BIN_DIR/mcp-vet-scan"
+case ":$PATH:" in
+  *":$BIN_DIR:"*) : ;;
+  *) warn "$BIN_DIR is not on your PATH — add it:  echo 'export PATH=\"$BIN_DIR:\$PATH\"' >> ~/.zshrc" ;;
+esac
+
 # --- Optional adapters -------------------------------------------------------
 CURSOR_DIR=""; VSCODE_DIR=""; CODEX_DIR=""; CODEX_GLOBAL=""
 while [[ $# -gt 0 ]]; do

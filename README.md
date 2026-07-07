@@ -52,7 +52,7 @@ Every finding maps to a named, documented attack class (full detail in [`referen
 
 ## Example output
 
-```
+```text
 🛑 BLOCK — postmark-mcp   (pre-install)
 
 Top reasons
@@ -85,7 +85,9 @@ Skills live in `~/.claude/skills/`. Copy the bundle in (the repo root *is* the s
 mkdir -p ~/.claude/skills/mcp-vet
 cp -R SKILL.md references scripts ~/.claude/skills/mcp-vet/
 ```
-Or run `./install.sh` (does the same, plus offers the adapters below). It triggers automatically when you're about to add/trust an MCP server, or invoke it directly: `use the mcp-vet skill to check github.com/foo/bar-mcp`.
+Or run `./install.sh` — it installs the skill, drops the scanner CLI (`mcp-vet-scan`) on your `PATH`, and offers the adapters below. The skill triggers automatically when you're about to add/trust an MCP server, or invoke it directly: `use the mcp-vet skill to check github.com/foo/bar-mcp`.
+
+> **`mcp-vet-scan` on PATH:** `install.sh` copies the scanner orchestrator to `~/.local/bin/mcp-vet-scan`, so the scanner layer works in **every** tool below — Cursor, VS Code, Codex — without needing this repo checked out in your workspace. (Override the location with `MCP_VET_BIN=/somewhere ./install.sh`.)
 
 ### 🖱️ Cursor
 Cursor loads rules from `.cursor/rules/*.mdc`. Drop in the adapter (per-project) — it's an *Agent-Requested* rule, so Cursor auto-consults it when you mention adding an MCP server:
@@ -94,7 +96,7 @@ Cursor loads rules from `.cursor/rules/*.mdc`. Drop in the adapter (per-project)
 mkdir -p .cursor/rules
 cp adapters/cursor/mcp-vet.mdc .cursor/rules/
 ```
-For it to run the scanner script, keep this repo reachable (e.g. cloned in your workspace) — the rule points at `scripts/run_scanners.sh`.
+The rule calls `mcp-vet-scan` (installed on your `PATH` by `./install.sh`), so its scanner layer works even when this repo isn't in your workspace.
 
 ### 🆚 VS Code (GitHub Copilot)
 Copilot loads reusable prompts from `.github/prompts/*.prompt.md`, invoked as slash commands:
@@ -137,7 +139,7 @@ Severity-max wins — **one BLOCK signal blocks**; this is a gate, not an averag
 
 ## Repository layout
 
-```
+```text
 mcp-vet/
 ├── SKILL.md                  # Claude Code skill: routing, pipeline, gate rubric
 ├── references/
@@ -163,6 +165,12 @@ mcp-vet/
 ## Credits & sources
 
 Threat model synthesized from [Trail of Bits](https://blog.trailofbits.com/2025/04/21/jumping-the-line-how-mcp-servers-can-attack-you-before-you-ever-use-them/) (line jumping), [Invariant Labs](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) (tool poisoning / MCP-Scan), Simon Willison (lethal trifecta), [OWASP](https://owasp.org/www-project-mcp-top-10/) (MCP / LLM Top 10), the NSA MCP CSI, the official [MCP spec](https://modelcontextprotocol.io/docs/tutorials/security/security_best_practices), and the `postmark-mcp` incident advisories from [Postmark](https://postmarkapp.com/blog/information-regarding-malicious-postmark-mcp-package), [Snyk](https://snyk.io/blog/malicious-mcp-server-on-npm-postmark-mcp-harvests-emails/), and [The Hacker News](https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html). Full citation list in [`references/sources.md`](references/sources.md).
+
+## Contributing
+
+Contributions that add real detection signal — a new attack class, a verified scanner, a sharper heuristic, or a
+regression test — are especially welcome. The one hard rule: **no fabricated findings**, and every security claim
+cites a source. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add attack classes, scanners, and eval cases.
 
 ## License
 
