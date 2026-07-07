@@ -2,7 +2,7 @@
 
 **A security "hound dog" that vets MCP (Model Context Protocol) servers before you trust them — and audits the ones you already run — then gives you a terse `APPROVE` / `WARN` / `BLOCK` decision with the reasons.**
 
-An MCP server runs as the **most credentialed process in the room**: your agent hands it your tokens and executes whatever its tools describe. A malicious server doesn't need an exploit — it just needs a convincing tool *description*, because the model reads and obeys tool descriptions **before any tool is ever called**. That's not hypothetical: in September 2025 the `postmark-mcp` npm package ran 15 clean releases, then shipped a one-line backdoor in v1.0.16 that BCC'd every email — password resets, MFA codes, invoices — to an attacker's domain. ~1,600 installs later, it became the [first malicious MCP server found in the wild](https://postmarkapp.com/blog/information-regarding-malicious-postmark-mcp-package).
+An MCP server runs as the **most credentialed process in the room**: your agent hands it your tokens and executes whatever its tools describe. A malicious server doesn't need an exploit — it just needs a convincing tool *description*, because the model reads and obeys tool descriptions **before any tool is ever called**. That's not hypothetical: in September 2025 a malicious npm package impersonating a well-known transactional-email vendor ran 15 clean releases, then shipped a one-line backdoor in a later version that BCC'd every email — password resets, MFA codes, invoices — to an attacker's domain. ~1,600 installs later, it became the [first malicious MCP server found in the wild](https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html).
 
 `mcp-vet` is a portable instruction bundle + scanner-orchestration script that catches this class of thing. It works in **Claude Code, Cursor, VS Code (Copilot), and OpenAI Codex** — anywhere an agent can add an MCP server.
 
@@ -15,7 +15,7 @@ Give it a GitHub URL, an npm/PyPI package, a raw config snippet, or point it at 
 - **Tool-definition surface** — the `tools/list` descriptions your model ingests. Home of tool poisoning, line jumping, and cross-server shadowing. *Invisible to source-code scanners.*
 - **Source / supply-chain surface** — the actual code and dependencies. Home of exfil endpoints, hardcoded credentials, install-hook malware, and rug-pull diffs. *Invisible to description scanners.*
 
-`postmark-mcp` proves you need both: its description was clean; the exfil was one line of **code**. Skip a surface and you miss half the threat.
+That incident proves you need both: the package's description was clean; the exfil was one line of **code**. Skip a surface and you miss half the threat.
 
 It layers **real open-source scanners** when they're installed (and degrades honestly to static reasoning when they aren't — an absent scanner is reported as absent, never as a pass):
 
@@ -38,7 +38,7 @@ Every finding maps to a named, documented attack class (full detail in [`referen
 | **Tool poisoning** | Hidden instructions in a tool description the model executes silently | 🛑 BLOCK |
 | **Line jumping** | The server attacks via description metadata *before* any tool call | 🛑 BLOCK |
 | **Tool / cross-server shadowing** | One server's description hijacks how a *different, trusted* server behaves | 🛑 BLOCK |
-| **Rug pull / capability drift** | A trusted server changes behavior after install (the `postmark-mcp` case) | 🛑 BLOCK |
+| **Rug pull / capability drift** | A trusted server changes behavior after install (clean for 15 releases, then a backdoor) | 🛑 BLOCK |
 | **Supply-chain impersonation** | A legit-sounding name not published by the vendor it evokes | 🛑 BLOCK |
 | **Token passthrough / credential theft** | Accepts or exfiltrates secrets never issued for it | 🛑 BLOCK |
 | **Confused deputy** | Abuses its privileged position / OAuth beyond user intent | ⚠️ WARN |
@@ -53,18 +53,18 @@ Every finding maps to a named, documented attack class (full detail in [`referen
 ## Example output
 
 ```text
-🛑 BLOCK — postmark-mcp   (pre-install)
+🛑 BLOCK — acme-mailer-mcp   (pre-install)
 
 Top reasons
-1. Impersonation — package name claims "Postmark"; not published by Postmark.        [BLOCK]
-2. Exfil endpoint — every send BCC'd to phan@giftshop[.]club (added in v1.0.16).       [BLOCK]
+1. Impersonation — package name claims a well-known email vendor; not published by that vendor.  [BLOCK]
+2. Exfil endpoint — every send secretly BCC'd to an unrelated attacker domain (added in a later release). [BLOCK]
 3. Rug pull — behavior added after 15 clean releases; `npx -y` auto-delivers it.       [BLOCK]
 
 Scanners run: mcp-scan ✓  trufflehog ✓ [1 verified]  guarddog ✓ [HIGH]  ·  osv-scanner ✗ absent
 Coverage: tool-definition ✓ · source ✓ · provenance ✓
 
 Do now
-• Do not install. If already installed: uninstall, then rotate the Postmark token + any creds sent in email.
+• Do not install. If already installed: uninstall, then rotate the vendor API token + any creds sent in email.
 ```
 
 ---
@@ -164,7 +164,7 @@ mcp-vet/
 
 ## Credits & sources
 
-Threat model synthesized from [Trail of Bits](https://blog.trailofbits.com/2025/04/21/jumping-the-line-how-mcp-servers-can-attack-you-before-you-ever-use-them/) (line jumping), [Invariant Labs](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) (tool poisoning / MCP-Scan), Simon Willison (lethal trifecta), [OWASP](https://owasp.org/www-project-mcp-top-10/) (MCP / LLM Top 10), the NSA MCP CSI, the official [MCP spec](https://modelcontextprotocol.io/docs/tutorials/security/security_best_practices), and the `postmark-mcp` incident advisories from [Postmark](https://postmarkapp.com/blog/information-regarding-malicious-postmark-mcp-package), [Snyk](https://snyk.io/blog/malicious-mcp-server-on-npm-postmark-mcp-harvests-emails/), and [The Hacker News](https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html). Full citation list in [`references/sources.md`](references/sources.md).
+Threat model synthesized from [Trail of Bits](https://blog.trailofbits.com/2025/04/21/jumping-the-line-how-mcp-servers-can-attack-you-before-you-ever-use-them/) (line jumping), [Invariant Labs](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) (tool poisoning / MCP-Scan), Simon Willison (lethal trifecta), [OWASP](https://owasp.org/www-project-mcp-top-10/) (MCP / LLM Top 10), the NSA MCP CSI, the official [MCP spec](https://modelcontextprotocol.io/docs/tutorials/security/security_best_practices), and reporting on the first in-the-wild malicious MCP server ([The Hacker News](https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html), [Semgrep](https://semgrep.dev/blog/2025/so-the-first-malicious-mcp-server-has-been-found-on-npm-what-does-this-mean-for-mcp-security/)). Full citation list in [`references/sources.md`](references/sources.md).
 
 ## Contributing
 
