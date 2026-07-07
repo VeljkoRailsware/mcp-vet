@@ -1,16 +1,19 @@
 ---
 name: mcp-vet
 description: >-
-  Security "hound dog" that vets Model Context Protocol (MCP) servers for malicious behavior and issues a
-  terse APPROVE / WARN / BLOCK gate decision with the blocking reasons. Use this whenever the user is about
-  to install, add, connect, enable, or trust an MCP server, tool, or connector — from a GitHub repo, npm/PyPI
-  package, or a config snippet (`command`/`args`/`url`) — or wants to audit the MCP servers already configured
-  on their machine (.mcp.json, .claude/settings, claude_desktop_config.json, Cursor/VS Code MCP configs). Also
-  trigger on: "is this MCP server safe", "check/scan/vet/audit this MCP", "tool poisoning", "MCP rug pull",
-  "line jumping", "should I install this MCP", suspicious tool descriptions, or reviewing an unfamiliar/community
-  MCP wrapper before wiring credentials into it. It layers real open-source scanners (mcp-scan, semgrep,
-  trufflehog, guarddog, osv-scanner and more) when installed and falls back to static reasoning when they aren't.
-  Prefer this skill over a generic code review any time the subject is an MCP server's trustworthiness.
+  Security hound dog that vets a Model Context Protocol (MCP) server before you trust it with your data, tokens,
+  or credentials — and audits ones already installed — returning a terse APPROVE / WARN / BLOCK verdict with
+  reasons. Use it whenever the user is deciding whether to add, install, enable, connect, paste, or merge an MCP
+  server, tool, or connector and wants to know if it's safe, legit, or trustworthy: a GitHub repo, an npm/PyPI
+  package, or an `npx`/`command`/`args`/`env` config snippet (.mcp.json, claude_desktop_config.json,
+  .cursor/mcp.json), especially from an unfamiliar author or one asking for tokens. Also for casual phrasings —
+  'is this MCP legit/safe?', 'should I install this?', 'am I being dumb wiring this in?', 'sanity-check these
+  connectors before we merge' — and for an already-installed server that changed, misbehaves, or shows unexpected
+  outbound traffic (drift / rug pull). Fires on tool poisoning, line jumping, and hidden instructions in tool
+  descriptions. It layers real OSS scanners (mcp-scan, semgrep, trufflehog, guarddog, osv-scanner) when installed
+  and falls back to static reasoning when they aren't. Prefer this over ordinary code review whenever the real
+  question is trust — whether the server can be handed your data and credentials — not whether its code is
+  well-written.
 ---
 
 # mcp-vet — MCP server security houndog
